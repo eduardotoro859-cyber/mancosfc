@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mancos F.C. - Torneo Oficial</title>
+  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div class="app-layout">
+    <!-- Barra Superior -->
+    <header class="main-header">
+      <div class="header-inner">
+        <div class="brand-group">
+          <div class="crest-wrapper">
+            <img src="assets/logo.jpg" alt="Mancos F.C. Escudo" class="crest-img">
+            <span class="live-indicator-badge" title="Torneo en curso"></span>
+          </div>
+          <div class="brand-text">
+            <div class="title-row">
+              <h1 class="brand-title">MANCOS <span class="text-crimson">F.C.</span></h1>
+            </div>
+            <div class="meta-row">
+              <span class="badge-tag">EST 2024</span>
+              <span class="meta-dot">·</span>
+              <span class="tournament-edition">Torneo Clausura 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-admin" id="btn-login" aria-label="Acceso Administrador">
+          <svg class="admin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
+          </svg>
+          <span class="admin-label">Admin</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Banner / Resumen de la Jornada -->
+    <section class="hero-banner">
+      <div class="hero-glow"></div>
+      <div class="hero-content">
+        <div class="hero-tag">
+          <span class="pulse-icon"></span>
+          JORNADA EN VIVO
+        </div>
+        <h2 class="hero-heading" id="hero-matchday-heading">Jornada 1</h2>
+
+        <!-- Indicadores rápidos de la Jornada (3 columnas) -->
+        <div class="quick-stats-grid stats-grid-3">
+          <div class="stat-box">
+            <span class="stat-number">4</span>
+            <span class="stat-name">Equipos</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="hero-matches-count">0</span>
+            <span class="stat-name">Partidos</span>
+          </div>
+          <div class="stat-box highlight-crimson">
+            <span class="stat-number" id="hero-goals-count">0</span>
+            <span class="stat-name">Goles</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Selector de Pestañas (Posiciones, Goleadores, Colistas, Autogoles) -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-target="tab-tabla">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+          <path d="M4 22h16" />
+          <path d="M10 14.66V17c0 .55-.45 1-1 1H7v2h10v-2h-2c-.55 0-1-.45-1-1v-2.34" />
+          <path d="M6 5h12v6a6 6 0 0 1-12 0V5z" />
+        </svg>
+        <span>Posiciones</span>
+      </button>
+
+      <button class="tab-btn" data-target="tab-pichichi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="6" />
+          <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+        </svg>
+        <span>Goleadores</span>
+      </button>
+
+      <button class="tab-btn" data-target="tab-colistas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M19 12l-7 7-7-7" />
+        </svg>
+        <span>Colistas</span>
+      </button>
+
+      <button class="tab-btn" data-target="tab-autogoles">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m16 8-8 8" />
+          <path d="m8 8 8 8" />
+        </svg>
+        <span>Autogoles</span>
+      </button>
+
+      <button class="tab-btn" data-target="tab-historial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        <span>Historial</span>
+      </button>
+    </nav>
+
+    <!-- Contenido Dinámico de Pestañas -->
+    <main class="main-body">
+
+      <!-- PESTAÑA 1: TABLA DE POSICIONES -->
+      <section id="tab-tabla" class="tab-pane active">
+        <div class="card-glass">
+          <div class="card-head">
+            <div class="head-left">
+              <span class="icon-title trophy-badge">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                  <path d="M4 22h16" />
+                  <path d="M10 14.66V17c0 .55-.45 1-1 1H7v2h10v-2h-2c-.55 0-1-.45-1-1v-2.34" />
+                  <path d="M6 5h12v6a6 6 0 0 1-12 0V5z" />
+                </svg>
+              </span>
+              <h3 class="panel-title">Tabla de la Jornada</h3>
+            </div>
+            <span class="date-badge">Actualizado hoy</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="mancos-table">
+              <thead>
+                <tr>
+                  <th class="th-pos">#</th>
+                  <th class="th-team">Equipo</th>
+                  <th title="Partidos Jugados">PJ</th>
+                  <th class="col-secondary" title="Ganados">PG</th>
+                  <th class="col-secondary" title="Empatados">PE</th>
+                  <th class="col-secondary" title="Perdidos">PP</th>
+                  <th class="col-secondary" title="Goles a Favor">GF</th>
+                  <th class="col-secondary" title="Goles en Contra">GC</th>
+                  <th title="Diferencia">DG</th>
+                  <th class="th-pts" title="Puntos">PTS</th>
+                </tr>
+              </thead>
+              <tbody id="live-standings-tbody">
+                <!-- Se llena dinámicamente en tiempo real desde app.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-legend">
+            <span class="legend-item"><span class="legend-dot green"></span> Victoria: 3 pts</span>
+            <span class="legend-item"><span class="legend-dot yellow"></span> Empate: 1 pt</span>
+            <span class="legend-item"><span class="legend-dot neutral"></span> Derrota: 0 pts</span>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: PICHICHI DE LA JORNADA (PODIO TOP 3) -->
+        <div class="card-glass mt-16">
+          <div class="card-head">
+            <div class="head-left">
+              <span class="icon-title scorer-badge">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m4.93 4.93 4.24 4.24" />
+                  <path d="m14.83 9.17 4.24-4.24" />
+                  <path d="m14.83 14.83 4.24 4.24" />
+                  <path d="m9.17 14.83-4.24 4.24" />
+                  <circle cx="12" cy="12" r="4" />
+                </svg>
+              </span>
+              <h3 class="panel-title">Pichichi de la Jornada</h3>
+            </div>
+            <span class="badge-tag">Top 3 en Vivo</span>
+          </div>
+
+          <!-- Podio Gráfico Dinámico (3 Pilares) -->
+          <div class="podium-chart-wrapper" id="matchday-pichichi-wrapper">
+            <!-- Se renderiza dinámicamente desde app.js -->
+          </div>
+        </div>
+
+        <!-- SECCIÓN: EQUIPOS DE LA JORNADA (PLANTELES) -->
+        <div class="card-glass mt-16">
+          <div class="card-head">
+            <div class="head-left">
+              <span class="icon-title team-badge">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </span>
+              <h3 class="panel-title">Equipos de la Jornada</h3>
+            </div>
+            <span class="date-badge">4 Equipos</span>
+          </div>
+
+          <div class="teams-roster-grid">
+            <!-- Equipo Azul -->
+            <div class="roster-card team-card-blue">
+              <div class="roster-card-header">
+                <div class="team-identity">
+                  <span class="team-bullet bullet-blue"></span>
+                  <h4>Azul</h4>
+                </div>
+                <span class="roster-count" id="roster-count-azul">0 Jugadores</span>
+              </div>
+              <ul class="roster-names-list" id="roster-azul-list">
+                <li class="empty-roster-msg">Sin jugadores asignados aún</li>
+              </ul>
+            </div>
+
+            <!-- Equipo Blanco -->
+            <div class="roster-card team-card-white">
+              <div class="roster-card-header">
+                <div class="team-identity">
+                  <span class="team-bullet bullet-white"></span>
+                  <h4>Blanco</h4>
+                </div>
+                <span class="roster-count" id="roster-count-blanco">0 Jugadores</span>
+              </div>
+              <ul class="roster-names-list" id="roster-blanco-list">
+                <li class="empty-roster-msg">Sin jugadores asignados aún</li>
+              </ul>
+            </div>
+
+            <!-- Equipo Negro -->
+            <div class="roster-card team-card-black">
+              <div class="roster-card-header">
+                <div class="team-identity">
+                  <span class="team-bullet bullet-black"></span>
+                  <h4>Negro</h4>
+                </div>
+                <span class="roster-count" id="roster-count-negro">0 Jugadores</span>
+              </div>
+              <ul class="roster-names-list" id="roster-negro-list">
+                <li class="empty-roster-msg">Sin jugadores asignados aún</li>
+              </ul>
+            </div>
+
+            <!-- Equipo Rojo -->
+            <div class="roster-card team-card-red">
+              <div class="roster-card-header">
+                <div class="team-identity">
+                  <span class="team-bullet bullet-red"></span>
+                  <h4>Rojo</h4>
+                </div>
+                <span class="roster-count" id="roster-count-rojo">0 Jugadores</span>
+              </div>
+              <ul class="roster-names-list" id="roster-rojo-list">
+                <li class="empty-roster-msg">Sin jugadores asignados aún</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PESTAÑA: GOLEADORES ACUMULADOS (HISTÓRICO GENERAL DEL TORNEO) -->
+      <section id="tab-pichichi" class="tab-pane">
+        <div class="card-glass">
+          <div class="card-head">
+            <div class="head-left">
+              <span class="icon-title scorer-badge">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m4.93 4.93 4.24 4.24" />
+                  <path d="m14.83 9.17 4.24-4.24" />
+                  <path d="m14.83 14.83 4.24 4.24" />
+                  <path d="m9.17 14.83-4.24 4.24" />
+                  <circle cx="12" cy="12" r="4" />
+                </svg>
+              </span>
+              <div>
+                <h3 class="panel-title">Tabla Acumulada de Goleadores</h3>
+                <span class="panel-subtitle">Histórico general del torneo · Actualización automática al cerrar cada
+                  jornada</span>
+              </div>
+            </div>
+            <span class="badge-tag" id="total-players-badge">20 Jugadores</span>
+          </div>
+
+          <!-- Podio de los 3 Máximos Goleadores Históricos del Torneo -->
+          <div class="podium-chart-wrapper" id="cumulative-podium-wrapper">
+            <!-- Se renderiza dinámicamente desde app.js -->
+          </div>
+
+          <!-- Tabla Completa con TODOS los Jugadores en Orden Descendente -->
+          <div class="scorers-table-box mt-16">
+            <div class="scorers-header-flex">
+              <h4 class="scorers-subtitle">Clasificación General de Todos los Jugadores</h4>
+              <span class="scorers-count-badge">Ordenados por mayor cantidad de goles</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="mancos-table scorers-table">
+                <thead>
+                  <tr>
+                    <th class="th-pos">#</th>
+                    <th class="th-team">Jugador</th>
+                    <th>Equipo</th>
+                    <th title="Jornadas Disputadas">Jornadas</th>
+                    <th class="th-pts" title="Total de Goles">Goles</th>
+                  </tr>
+                </thead>
+                <tbody id="cumulative-scorers-tbody">
+                  <!-- Se llena automáticamente con todos los jugadores ordenados descendentemente -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PESTAÑA: COLISTAS (MÁS VECES EN ÚLTIMO LUGAR) -->
+      <section id="tab-colistas" class="tab-pane">
+        <div class="card-glass">
+          <div class="card-head">
+            <div class="head-left">
+              <span class="icon-title colistas-badge">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 5v14M19 12l-7 7-7-7" />
+                </svg>
+              </span>
+              <div>
+                <h3 class="panel-title">Tabla de Colistas</h3>
+                <span class="panel-subtitle">Histórico general · Jugadores con más finales en 4° lugar</span>
+              </div>
+            </div>
+            <span class="badge-tag">20 Jugadores</span>
+          </div>
+
+          <!-- Podio de los 3 con Más Últimos Lugares -->
+          <div class="podium-chart-wrapper" id="colistas-podium-wrapper">
+            <!-- Se renderiza dinámicamente desde app.js -->
+          </div>
+
+          <!-- Tabla Completa con TODOS los Jugadores en Orden Descendente de Colistas -->
+          <div class="scorers-table-box mt-16">
+            <div class="scorers-header-flex">
+              <h4 class="scorers-subtitle">Clasificación General de Últimos Lugares</h4>
+              <span class="scorers-count-badge">Ordenados de mayor a menor cantidad de veces colista</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="mancos-table scorers-table">
+                <thead>
+                  <tr>
+                    <th class="th-pos">#</th>
+                    <th class="th-team">Jugador</th>
+                    <th>Equipo</th>
+                    <th title="Jornadas Disputadas">Jornadas</th>
+                    <th class="th-pts" title="Veces en Último Lugar">Colista</th>
+                  </tr>
+                </thead>
+                <tbody id="colistas-tbody">
+                  <!-- Se llena automáticamente desde app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PESTAÑA: AUTOGOLES (MÁS GOLES EN CONTRA) -->
+      <section id="tab-autogoles" class="tab-pane">
+        <div class="card-glass">
+          <div class="card-head">
+            <div class="head-left">
+              <span class="icon-title autogoles-badge">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m16 8-8 8" />
+                  <path d="m8 8 8 8" />
+                </svg>
+              </span>
+              <div>
+                <h3 class="panel-title">Tabla Acumulada de Autogoles</h3>
+                <span class="panel-subtitle">Histórico general · Jugadores con más goles en contra</span>
+              </div>
+            </div>
+            <span class="badge-tag">20 Jugadores</span>
+          </div>
+
+          <!-- Podio de los 3 con Más Autogoles -->
+          <div class="podium-chart-wrapper" id="autogoles-podium-wrapper">
+            <!-- Se renderiza dinámicamente desde app.js -->
+          </div>
+
+          <!-- Tabla Completa con TODOS los Jugadores en Orden Descendente de Autogoles -->
+          <div class="scorers-table-box mt-16">
+            <div class="scorers-header-flex">
+              <h4 class="scorers-subtitle">Clasificación General de Autogoles</h4>
+              <span class="scorers-count-badge">Ordenados de mayor a menor cantidad de goles en propia meta</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="mancos-table scorers-table">
+                <thead>
+                  <tr>
+                    <th class="th-pos">#</th>
+                    <th class="th-team">Jugador</th>
+                    <th>Equipo</th>
+                    <th title="Jornadas Disputadas">Jornadas</th>
+                    <th class="th-pts" title="Total de Autogoles">Autogoles</th>
+                  </tr>
+                </thead>
+                <tbody id="autogoles-tbody">
+                  <!-- Se llena automáticamente desde app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PESTAÑA: HISTORIAL DE JORNADAS PASADAS -->
+      <section id="tab-historial" class="tab-pane">
+        <div class="card-glass">
+          <div class="card-head">
+            <div class="head-left">
+              <span class="icon-title history-badge">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </span>
+              <div>
+                <h3 class="panel-title">Historial de Jornadas</h3>
+                <span class="panel-subtitle">Consulta fechas, resultados, goleadores y planteles de cada jornada disputada</span>
+              </div>
+            </div>
+            <span class="badge-tag" id="history-total-badge">0 Jornadas</span>
+          </div>
+
+          <!-- Selector de Fechas / Jornadas Archivadas -->
+          <div class="history-selector-wrapper">
+            <span class="history-selector-label">Selecciona una jornada para ver su resumen completo:</span>
+            <div class="history-selector-bar" id="history-selector-container">
+              <!-- Se puebla dinámicamente desde app.js -->
+            </div>
+          </div>
+
+          <!-- Contenedor del Detalle de la Jornada Seleccionada -->
+          <div id="history-detail-container" class="history-detail-box">
+            <!-- Se puebla dinámicamente desde app.js -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer Elegante -->
+    <footer class="app-footer">
+      <div class="footer-logo">
+        <img src="assets/logo.jpg" alt="Mancos F.C." class="footer-crest">
+        <span class="footer-name">MANCOS F.C.</span>
+      </div>
+      <p class="footer-copy">Mancos F.C. Tournament Hub &copy; 2026 · Pasión de Amigos</p>
+    </footer>
+
+  </div><!-- Fin de .app-layout -->
+
+  <!-- Modal de Inicio de Sesión de Administrador -->
+  <div class="modal-backdrop" id="modal-login" style="display: none;">
+    <div class="modal-container login-modal-box">
+      <div class="modal-decor-line"></div>
+      <div class="modal-header">
+        <div class="modal-crest-wrap">
+          <img src="assets/logo.jpg" alt="Mancos F.C." class="modal-crest">
+        </div>
+        <h3 class="modal-heading">Acceso Administrador</h3>
+        <p class="modal-sub">Ingreso exclusivo para gestión y sorteo de equipos</p>
+      </div>
+
+      <form class="modal-form" id="admin-login-form">
+        <div class="input-field">
+          <label for="admin-name">Nombre de Administrador</label>
+          <input type="text" id="admin-name" placeholder="Ingresa el nombre" required autocomplete="username">
+        </div>
+        <div class="input-field">
+          <label for="admin-pass">Contraseña</label>
+          <input type="password" id="admin-pass" placeholder="Ingresa tu contraseña" required
+            autocomplete="current-password">
+        </div>
+
+        <div id="login-error-msg" class="login-error-alert" style="display: none;">
+          Nombre de administrador o contraseña incorrectos.
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary-action">Iniciar Sesión</button>
+          <button type="button" class="btn-secondary-action" id="btn-cancel-login">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Administración Integral (Bombos & Armado de Equipos) - Modo Pantalla Completa Móvil & Desktop -->
+  <div class="modal-backdrop admin-fullscreen-backdrop" id="modal-admin" style="display: none;">
+    <div class="admin-panel-fullscreen">
+      <div class="modal-decor-line"></div>
+
+      <!-- Header Superior del Panel Fullscreen -->
+      <header class="admin-fullscreen-head">
+        <div class="admin-head-left">
+          <button class="btn-back-tournament" id="btn-back-admin" title="Volver al Torneo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            <span class="btn-back-label">Torneo</span>
+          </button>
+          <div class="admin-brand-inline">
+            <img src="assets/logo.jpg" alt="Mancos F.C." class="admin-head-crest">
+            <div class="admin-title-box">
+              <h3 class="admin-fullscreen-title">Panel Admin</h3>
+              <p class="admin-fullscreen-sub">Bombos & Nivelación</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-head-right">
+          <div class="admin-logged-tag">
+            <span class="admin-online-dot"></span>
+            <span class="admin-user-name" id="admin-user-name-display">Eduardo</span>
+          </div>
+          <button class="btn-logout-mini" id="btn-logout-admin" title="Cerrar Sesión">Salir</button>
+          <button class="btn-close-circle" id="btn-close-admin" aria-label="Cerrar Panel" title="Cerrar Panel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Cuerpo Desplazable del Panel Fullscreen -->
+      <div class="admin-fullscreen-body">
+        <div class="admin-fullscreen-container">
+
+          <!-- Pestañas Internas del Administrador -->
+          <div class="admin-subtabs">
+            <button class="admin-subtab-btn active" data-admin-pane="admin-pane-pots">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                <polyline points="2 17 12 22 22 17" />
+                <polyline points="2 12 12 17 22 12" />
+              </svg>
+              <span>5 Bombos</span>
+            </button>
+
+            <button class="admin-subtab-btn" data-admin-pane="admin-pane-draw">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <line x1="19" y1="8" x2="19" y2="14" />
+                <line x1="22" y1="11" x2="16" y2="11" />
+              </svg>
+              <span>Armado</span>
+            </button>
+
+            <button class="admin-subtab-btn" data-admin-pane="admin-pane-live">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polygon points="10 8 16 12 10 16 10 8" />
+              </svg>
+              <span>Jornada en Vivo</span>
+            </button>
+          </div>
+
+          <!-- Panel 1: Gestión de los 5 Bombos -->
+          <div class="admin-pane active" id="admin-pane-pots">
+            <div class="admin-info-banner">
+              <div class="info-svg-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+              </div>
+              <div class="info-text">
+                <strong>Regla de equilibrio:</strong> Los 20 jugadores se distribuyen en <strong>5 bombos de
+                  nivel</strong> (4 jugadores en cada uno). Al sortear, cada equipo recibe exactamente <strong>1 jugador
+                  de cada bombo</strong> para tener <strong>5 jugadores por equipo</strong>.
+              </div>
+            </div>
+
+            <!-- Barra de Estado Global de los Bombos -->
+            <div class="pots-status-bar">
+              <div class="pots-status-left">
+                <span class="pots-total-registered">Total Jugadores: <strong id="pots-total-count">0</strong>/20</span>
+                <span class="pots-status-pill incomplete" id="pots-global-status">Faltan 20</span>
+              </div>
+              <button type="button" class="btn-clear-pots" id="btn-clear-all-players"
+                title="Borrar todos los jugadores y reiniciar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                <span>Vaciar Todo</span>
+              </button>
+            </div>
+
+            <!-- Contenedor dinámico de los 5 Bombos con sus inputs independientes -->
+            <div class="pots-management-grid" id="pots-management-container">
+              <!-- Se renderizan los 5 bombos con sus campos de entrada desde app.js -->
+            </div>
+          </div>
+
+          <!-- Panel 2: Sorteo y Armado de Equipos -->
+          <div class="admin-pane" id="admin-pane-draw">
+
+            <!-- Barra de Selección y Edición de Ronda / Jornada -->
+            <div class="round-editor-bar">
+              <div class="round-editor-left">
+                <span class="round-editor-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </span>
+                <div class="round-editor-texts">
+                  <span class="round-editor-tag">RONDA / FECHA</span>
+                  <strong class="round-editor-title">Jornada a Disputar</strong>
+                </div>
+              </div>
+              <div class="round-stepper">
+                <button type="button" class="btn-stepper-step" id="btn-round-dec" title="Jornada anterior"
+                  aria-label="Restar jornada">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </button>
+                <div class="round-input-container">
+                  <span class="round-prefix-label">Jornada</span>
+                  <input type="number" id="input-round-number" min="1" max="99" value="1"
+                    aria-label="Número de Jornada">
+                </div>
+                <button type="button" class="btn-stepper-step" id="btn-round-inc" title="Siguiente jornada"
+                  aria-label="Sumar jornada">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="draw-actions-bar">
+              <button class="btn-primary-action btn-draw-trigger" id="btn-generate-draw">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>Generar Sorteo</span>
+              </button>
+
+              <button class="btn-repeat-draw" id="btn-repeat-draw" title="Volver a sortear los equipos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                </svg>
+                <span>Repetir Sorteo</span>
+              </button>
+
+              <button class="btn-success-action" id="btn-apply-teams">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Publicar Equipos en la Jornada</span>
+              </button>
+            </div>
+
+            <p class="draw-help-hint">Cada equipo queda armado con 5 jugadores (1 de Bombo 1, 1 de Bombo 2, 1 de Bombo
+              3, 1 de Bombo 4 y 1 de Bombo 5):</p>
+
+            <!-- Previsualización de los 4 Equipos Sorteados (5 Jugadores Cada Uno) -->
+            <div class="drawn-teams-grid" id="drawn-teams-container">
+              <!-- Se llena dinámicamente desde app.js -->
+            </div>
+          </div>
+
+          <!-- Panel 3: Jornada en Vivo (Sesión en Vivo de 2 Horas) -->
+          <div class="admin-pane" id="admin-pane-live">
+            
+            <!-- Banner de Sesión en Vivo -->
+            <div class="live-session-banner">
+              <div class="live-session-left">
+                <div class="live-pulse-badge">
+                  <span class="live-pulse-dot"></span>
+                  <span>EN VIVO · SESIÓN 2 HORAS</span>
+                </div>
+                <h3 class="live-session-heading" id="admin-live-round-title">Control de Jornada 1</h3>
+                <p class="live-session-sub">Edita puntos, partidos y goles directamente. Todos los cambios se reflejan al instante en la pantalla pública exterior.</p>
+              </div>
+              <div class="live-session-right">
+                <button type="button" class="btn-live-finish" id="btn-finish-and-save-round" title="Finalizar jornada, acumular estadísticas al historial y preparar la siguiente fecha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                  </svg>
+                  <span>Finalizar y Guardar Jornada</span>
+                </button>
+                <button type="button" class="btn-live-reset" id="btn-reset-live-stats" title="Reiniciar a cero únicamente los marcadores en vivo de la jornada actual">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10" />
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                  </svg>
+                  <span>Reiniciar Sesión</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bloque 1: Edición Directa de Equipos -->
+            <div class="live-section-card">
+              <div class="live-section-head">
+                <div class="live-head-title-wrap">
+                  <span class="live-head-icon-svg" title="Equipos y Resultados">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                      <path d="M4 22h16" />
+                      <path d="M10 14.66V17c0 .55-.45 1-1 1H7v2h10v-2h-2c-.55 0-1-.45-1-1v-2.34" />
+                      <path d="M6 5h12v6a6 6 0 0 1-12 0V5z" />
+                    </svg>
+                  </span>
+                  <div>
+                    <h4 class="live-section-title">Puntos y Resultados por Equipo</h4>
+                    <span class="live-section-subtitle">Dinámica Gol Gana (1-0 / 0-0): los goles suman victoria automática. Registra aquí las derrotas y empates</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cuadrícula de Edición Directa de los 4 Equipos -->
+              <div class="live-teams-control-grid" id="live-teams-control-container">
+                <!-- Se renderiza dinámicamente desde app.js -->
+              </div>
+            </div>
+
+            <!-- Bloque 2: Registro Directo de Goles y Autogoles por Jugador -->
+            <div class="live-section-card mt-14">
+              <div class="live-section-head">
+                <div class="live-head-title-wrap">
+                  <span class="live-head-icon-svg live-icon-ball" title="Goles y Autogoles">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="m4.93 4.93 4.24 4.24" />
+                      <path d="m14.83 9.17 4.24-4.24" />
+                      <path d="m14.83 14.83 4.24 4.24" />
+                      <path d="m9.17 14.83-4.24 4.24" />
+                      <circle cx="12" cy="12" r="4" />
+                    </svg>
+                  </span>
+                  <div>
+                    <h4 class="live-section-title">Goles y Autogoles por Jugador</h4>
+                    <span class="live-section-subtitle">Presiona + o - en cada jugador para sumar o restar goles y autogoles en vivo</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selector rápido de filtro de equipo -->
+              <div class="live-team-filters" id="live-player-filters">
+                <button type="button" class="btn-team-filter active" data-team="all">Todos</button>
+                <button type="button" class="btn-team-filter" data-team="azul">Azul</button>
+                <button type="button" class="btn-team-filter" data-team="blanco">Blanco</button>
+                <button type="button" class="btn-team-filter" data-team="negro">Negro</button>
+                <button type="button" class="btn-team-filter" data-team="rojo">Rojo</button>
+              </div>
+
+              <!-- Lista de Jugadores con Controles de Goles y Autogoles -->
+              <div class="live-players-scoring-list" id="live-players-scoring-container">
+                <!-- Se renderiza dinámicamente desde app.js -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Edición de Casilla / Sustitución de Jugador -->
+  <div class="modal-backdrop" id="modal-edit-slot" style="display: none; z-index: 1000;">
+    <div class="modal-container edit-slot-modal-box">
+      <div class="modal-decor-line"></div>
+
+      <div class="modal-header">
+        <div class="edit-badge-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        </div>
+        <h3 class="modal-heading">Editar Casilla de Jugador</h3>
+        <p class="modal-sub">Modifica el jugador o asígnalo al bombo y equipo que decidas</p>
+      </div>
+
+      <form class="modal-form" id="edit-slot-form">
+        <input type="hidden" id="edit-player-id">
+
+        <div class="input-field">
+          <label for="edit-player-name">Nombre del Jugador (o Suplente)</label>
+          <input type="text" id="edit-player-name" placeholder="Nombre completo o apodo" required maxlength="30"
+            autocomplete="off">
+        </div>
+
+        <div class="input-field">
+          <label for="edit-player-pot">Bombo Asignado</label>
+          <select id="edit-player-pot" class="modal-select">
+            <option value="1">Bombo 1</option>
+            <option value="2">Bombo 2</option>
+            <option value="3">Bombo 3</option>
+            <option value="4">Bombo 4</option>
+            <option value="5">Bombo 5</option>
+          </select>
+        </div>
+
+        <div class="input-field">
+          <label for="edit-player-team">Equipo Asignado en la Jornada</label>
+          <select id="edit-player-team" class="modal-select">
+            <option value="">Sin Asignar</option>
+            <option value="azul">Azul</option>
+            <option value="blanco">Blanco</option>
+            <option value="negro">Negro</option>
+            <option value="rojo">Rojo</option>
+          </select>
+        </div>
+
+        <div id="edit-error-msg" class="login-error-alert" style="display: none;"></div>
+
+        <div class="modal-actions-row">
+          <button type="submit" class="btn-primary-action">Guardar Casilla</button>
+          <button type="button" class="btn-secondary-action" id="btn-cancel-edit-slot">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
