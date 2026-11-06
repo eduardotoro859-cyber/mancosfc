@@ -114,7 +114,8 @@
       </button>
 
       <button class="tab-btn" data-target="tab-historial">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
         </svg>
@@ -445,14 +446,16 @@
           <div class="card-head">
             <div class="head-left">
               <span class="icon-title history-badge">
-                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
               </span>
               <div>
                 <h3 class="panel-title">Historial de Jornadas</h3>
-                <span class="panel-subtitle">Consulta fechas, resultados, goleadores y planteles de cada jornada disputada</span>
+                <span class="panel-subtitle">Consulta fechas, resultados, goleadores y planteles de cada jornada
+                  disputada</span>
               </div>
             </div>
             <span class="badge-tag" id="history-total-badge">0 Jornadas</span>
@@ -714,7 +717,7 @@
 
           <!-- Panel 3: Jornada en Vivo (Sesión en Vivo de 2 Horas) -->
           <div class="admin-pane" id="admin-pane-live">
-            
+
             <!-- Banner de Sesión en Vivo -->
             <div class="live-session-banner">
               <div class="live-session-left">
@@ -723,19 +726,24 @@
                   <span>EN VIVO · SESIÓN 2 HORAS</span>
                 </div>
                 <h3 class="live-session-heading" id="admin-live-round-title">Control de Jornada 1</h3>
-                <p class="live-session-sub">Edita puntos, partidos y goles directamente. Todos los cambios se reflejan al instante en la pantalla pública exterior.</p>
+                <p class="live-session-sub">Edita puntos, partidos y goles directamente. Todos los cambios se reflejan
+                  al instante en la pantalla pública exterior.</p>
               </div>
               <div class="live-session-right">
-                <button type="button" class="btn-live-finish" id="btn-finish-and-save-round" title="Finalizar jornada, acumular estadísticas al historial y preparar la siguiente fecha">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17 21 17 13 7 13 7 21"/>
-                    <polyline points="7 3 7 8 15 8"/>
+                <button type="button" class="btn-live-finish" id="btn-finish-and-save-round"
+                  title="Finalizar jornada, acumular estadísticas al historial y preparar la siguiente fecha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
                   </svg>
                   <span>Finalizar y Guardar Jornada</span>
                 </button>
-                <button type="button" class="btn-live-reset" id="btn-reset-live-stats" title="Reiniciar a cero únicamente los marcadores en vivo de la jornada actual">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="btn-live-reset" id="btn-reset-live-stats"
+                  title="Reiniciar a cero únicamente los marcadores en vivo de la jornada actual">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <polyline points="1 4 1 10 7 10" />
                     <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
                   </svg>
@@ -744,12 +752,87 @@
               </div>
             </div>
 
-            <!-- Bloque 1: Edición Directa de Equipos -->
+            <!-- SECCIÓN 1: MESA DE PARTIDO EN CANCHA (MATCH ARENA EN VIVO) -->
+            <div class="live-match-arena-card">
+              <div class="arena-top-bar">
+                <div class="arena-badge-tag">
+                  <span class="arena-live-dot"></span>
+                  <span>PARTIDO EN CANCHA</span>
+                </div>
+                <div class="arena-top-actions">
+                  <button type="button" class="btn-arena-swap" id="btn-swap-teams"
+                    title="Invertir lados de los equipos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="m16 3 4 4-4 4" />
+                      <path d="M20 7H4" />
+                      <path d="m8 21-4-4 4-4" />
+                      <path d="M4 17h16" />
+                    </svg>
+                    <span>Invertir Lados</span>
+                  </button>
+                  <button type="button" class="btn-arena-undo" id="btn-undo-last-match"
+                    title="Deshacer el último resultado registrado" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="1 4 1 10 7 10" />
+                      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                    </svg>
+                    <span>Deshacer</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Selector de Duelo de Equipos -->
+              <div class="arena-match-selector">
+                <div class="arena-team-picker" id="picker-team-a">
+                  <span class="picker-label">Equipo en Cancha</span>
+                  <div class="team-pills-row" id="pills-team-a">
+                    <!-- Se puebla dinámicamente desde app.js -->
+                  </div>
+                </div>
+
+                <div class="arena-vs-divider">
+                  <span class="vs-text">VS</span>
+                </div>
+
+                <div class="arena-team-picker" id="picker-team-b">
+                  <span class="picker-label">Equipo Retador</span>
+                  <div class="team-pills-row" id="pills-team-b">
+                    <!-- Se puebla dinámicamente desde app.js -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notificación de última acción en cancha -->
+              <div class="arena-status-msg" id="arena-status-banner" style="display: none;"></div>
+
+              <!-- Cancha de Juego: Los 5 Jugadores de A vs Los 5 Jugadores de B -->
+              <div class="arena-duel-grid" id="arena-duel-container">
+                <!-- Se puebla dinámicamente: Columna Equipo A vs Columna Equipo B -->
+              </div>
+
+              <!-- Botón Central de Empate 0-0 -->
+              <div class="arena-draw-action-wrap">
+                <button type="button" class="btn-arena-draw-big" id="btn-register-arena-draw"
+                  title="Finalizar partido sin goles: +1 punto a cada equipo (0 - 0)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <line x1="4" y1="6" x2="20" y2="6" />
+                    <line x1="4" y1="18" x2="20" y2="18" />
+                  </svg>
+                  <span class="draw-btn-text">
+                    <strong>Finalizar en Empate (0 - 0)</strong>
+                    <small>Suma +1 punto y +1 partido a ambos equipos en cancha</small>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- SECCIÓN 2: TABLA DE POSICIONES EN VIVO DE LA JORNADA -->
             <div class="live-section-card">
               <div class="live-section-head">
                 <div class="live-head-title-wrap">
-                  <span class="live-head-icon-svg" title="Equipos y Resultados">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <span class="live-head-icon-svg" title="Clasificación en vivo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
                       <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
                       <path d="M4 22h16" />
@@ -758,53 +841,88 @@
                     </svg>
                   </span>
                   <div>
-                    <h4 class="live-section-title">Puntos y Resultados por Equipo</h4>
-                    <span class="live-section-subtitle">Dinámica Gol Gana (1-0 / 0-0): los goles suman victoria automática. Registra aquí las derrotas y empates</span>
+                    <h4 class="live-section-title">Tabla de la Jornada en Vivo</h4>
+                    <span class="live-section-subtitle">Posiciones actualizadas automáticamente al instante</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Cuadrícula de Edición Directa de los 4 Equipos -->
-              <div class="live-teams-control-grid" id="live-teams-control-container">
-                <!-- Se renderiza dinámicamente desde app.js -->
+              <!-- Mini Tabla de Posiciones Rápida -->
+              <div class="table-responsive">
+                <table class="mancos-table mini-live-standings-table">
+                  <thead>
+                    <tr>
+                      <th class="th-pos">#</th>
+                      <th class="th-team">Equipo</th>
+                      <th>PJ</th>
+                      <th class="col-secondary">PG</th>
+                      <th class="col-secondary">PE</th>
+                      <th class="col-secondary">PP</th>
+                      <th class="col-secondary">GF</th>
+                      <th class="col-secondary">GC</th>
+                      <th>DG</th>
+                      <th class="th-pts">PTS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="arena-mini-standings-tbody">
+                    <!-- Se llena automáticamente desde app.js -->
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <!-- Bloque 2: Registro Directo de Goles y Autogoles por Jugador -->
-            <div class="live-section-card mt-14">
-              <div class="live-section-head">
-                <div class="live-head-title-wrap">
-                  <span class="live-head-icon-svg live-icon-ball" title="Goles y Autogoles">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m4.93 4.93 4.24 4.24" />
-                      <path d="m14.83 9.17 4.24-4.24" />
-                      <path d="m14.83 14.83 4.24 4.24" />
-                      <path d="m9.17 14.83-4.24 4.24" />
-                      <circle cx="12" cy="12" r="4" />
-                    </svg>
-                  </span>
-                  <div>
-                    <h4 class="live-section-title">Goles y Autogoles por Jugador</h4>
-                    <span class="live-section-subtitle">Presiona + o - en cada jugador para sumar o restar goles y autogoles en vivo</span>
+            <!-- SECCIÓN 3: AJUSTES MANUALES Y AUTOGOLES (COLAPSABLE) -->
+            <details class="live-advanced-details">
+              <summary class="live-advanced-summary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                <span>Ajustes manuales y registro de autogoles (Opciones avanzadas)</span>
+                <span class="summary-arrow">▾</span>
+              </summary>
+              <div class="advanced-details-body">
+                <div class="live-teams-control-grid" id="live-teams-control-container">
+                  <!-- Se renderiza dinámicamente desde app.js -->
+                </div>
+
+                <div class="live-section-card mt-14">
+                  <div class="live-section-head">
+                    <div class="live-head-title-wrap">
+                      <span class="live-head-icon-svg live-icon-ball" title="Goles y Autogoles">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="m4.93 4.93 4.24 4.24" />
+                          <path d="m14.83 9.17 4.24-4.24" />
+                          <path d="m14.83 14.83 4.24 4.24" />
+                          <path d="m9.17 14.83-4.24 4.24" />
+                          <circle cx="12" cy="12" r="4" />
+                        </svg>
+                      </span>
+                      <div>
+                        <h4 class="live-section-title">Todos los Jugadores (Goles y Autogoles)</h4>
+                        <span class="live-section-subtitle">Corrección fina individual o registro de autogoles</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Selector de filtro de equipo -->
+                  <div class="live-team-filters" id="live-player-filters">
+                    <button type="button" class="btn-team-filter active" data-team="all">Todos</button>
+                    <button type="button" class="btn-team-filter" data-team="azul">Azul</button>
+                    <button type="button" class="btn-team-filter" data-team="blanco">Blanco</button>
+                    <button type="button" class="btn-team-filter" data-team="negro">Negro</button>
+                    <button type="button" class="btn-team-filter" data-team="rojo">Rojo</button>
+                  </div>
+
+                  <!-- Lista de Jugadores -->
+                  <div class="live-players-scoring-list" id="live-players-scoring-container">
+                    <!-- Se renderiza dinámicamente desde app.js -->
                   </div>
                 </div>
               </div>
-
-              <!-- Selector rápido de filtro de equipo -->
-              <div class="live-team-filters" id="live-player-filters">
-                <button type="button" class="btn-team-filter active" data-team="all">Todos</button>
-                <button type="button" class="btn-team-filter" data-team="azul">Azul</button>
-                <button type="button" class="btn-team-filter" data-team="blanco">Blanco</button>
-                <button type="button" class="btn-team-filter" data-team="negro">Negro</button>
-                <button type="button" class="btn-team-filter" data-team="rojo">Rojo</button>
-              </div>
-
-              <!-- Lista de Jugadores con Controles de Goles y Autogoles -->
-              <div class="live-players-scoring-list" id="live-players-scoring-container">
-                <!-- Se renderiza dinámicamente desde app.js -->
-              </div>
-            </div>
+            </details>
 
           </div>
 

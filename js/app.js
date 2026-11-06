@@ -951,6 +951,370 @@ function recalculateLiveStandingsTeam(teamKey) {
   t.pts = (t.pg * 3) + (t.pe * 1);
 }
 
+// ========================================================
+// 6.2.1 ESTADO Y CONTROL DE LA ARENA DE PARTIDO EN VIVO
+// ========================================================
+let currentArenaTeamA = 'azul';
+let currentArenaTeamB = 'blanco';
+let lastMatchAction = null;
+
+function swapArenaTeams() {
+  const temp = currentArenaTeamA;
+  currentArenaTeamA = currentArenaTeamB;
+  currentArenaTeamB = temp;
+  renderMatchArena();
+}
+
+function setArenaTeam(side, teamKey) {
+  if (side === 'A') {
+    if (teamKey === currentArenaTeamB) {
+      currentArenaTeamB = currentArenaTeamA;
+    }
+    currentArenaTeamA = teamKey;
+  } else {
+    if (teamKey === currentArenaTeamA) {
+      currentArenaTeamA = currentArenaTeamB;
+    }
+    currentArenaTeamB = teamKey;
+  }
+  renderMatchArena();
+}
+
+function registerArenaGoal(playerId, winnerTeamKey, loserTeamKey) {
+  const scorer = TOURNAMENT_PLAYERS.find((p) => p.id === playerId);
+  if (!scorer) return;
+
+  const winnerDef = MANCOS_TEAMS[winnerTeamKey] || { name: winnerTeamKey };
+  const loserDef = MANCOS_TEAMS[loserTeamKey] || { name: loserTeamKey };
+
+  // Guardar acción previa para permitir Deshacer
+  lastMatchAction = {
+    type: 'goal',
+    scorerId: playerId,
+    winnerKey: winnerTeamKey,
+    loserKey: loserTeamKey,
+    scorerName: scorer.name,
+    winnerName: winnerDef.name,
+    loserName: loserDef.name
+  };
+
+  // 1. Sumar gol al jugador
+  scorer.goals = (scorer.goals || 0) + 1;
+
+  // 2. Sumar victoria al equipo ganador (+1 PG, +1 GF, +3 PTS, +1 PJ)
+  if (LIVE_STANDINGS[winnerTeamKey]) {
+    LIVE_STANDINGS[winnerTeamKey].pg = (LIVE_STANDINGS[winnerTeamKey].pg || 0) + 1;
+    recalculateLiveStandingsTeam(winnerTeamKey);
+  }
+
+  // 3. Sumar automáticamente la derrota al equipo perdedor (+1 PP, +1 GC, +1 PJ)
+  if (LIVE_STANDINGS[loserTeamKey]) {
+    LIVE_STANDINGS[loserTeamKey].pp = (LIVE_STANDINGS[loserTeamKey].pp || 0) + 1;
+    recalculateLiveStandingsTeam(loserTeamKey);
+  }
+
+  savePlayersDatabase();
+  saveLiveStandings();
+
+  // Actualizar todas las vistas
+  renderMatchArena();
+  renderMiniLiveStandings();
+  lastMatchAction = null;
+  renderMatchArena();
+  renderMiniLiveStandings();
+  renderLiveTeamsControl();
+  renderLivePlayersScoring();
+  renderStandingsTable();
+  renderAllSections();
+
+  showArenaStatusMsg(`¡Gol de ${scorer.name}! ${winnerDef.name} gana 1-0 a ${loserDef.name}. Derrota asignada a ${loserDef.name}.`, 'success');
+}
+
+function registerArenaDraw() {
+  const teamADef = MANCOS_TEAMS[currentArenaTeamA] || { name: currentArenaTeamA };
+  const teamBDef = MANCOS_TEAMS[currentArenaTeamB] || { name: currentArenaTeamB };
+
+  lastMatchAction = {
+    type: 'draw',
+    teamAKey: currentArenaTeamA,
+    teamBKey: currentArenaTeamB,
+    teamAName: teamADef.name,
+    teamBName: teamBDef.name
+  };
+
+  // Ambos equipos en cancha suman +1 empate y +1 punto (0-0)
+  if (LIVE_STANDINGS[currentArenaTeamA]) {
+    LIVE_STANDINGS[currentArenaTeamA].pe = (LIVE_STANDINGS[currentArenaTeamA].pe || 0) + 1;
+    recalculateLiveStandingsTeam(currentArenaTeamA);
+  }
+  if (LIVE_STANDINGS[currentArenaTeamB]) {
+    LIVE_STANDINGS[currentArenaTeamB].pe = (LIVE_STANDINGS[currentArenaTeamB].pe || 0) + 1;
+    recalculateLiveStandingsTeam(currentArenaTeamB);
+  }
+
+  saveLiveStandings();
+
+  renderMatchArena();
+  renderMiniLiveStandings();
+  lastMatchAction = null;
+  renderMatchArena();
+  renderMiniLiveStandings();
+  renderLiveTeamsControl();
+  renderLivePlayersScoring();
+  renderStandingsTable();
+  renderAllSections();
+
+  showArenaStatusMsg(`Empate (0 - 0) registrado entre ${teamADef.name} y ${teamBDef.name}. (+1 punto a cada uno).`, 'info');
+}
+
+function undoLastMatchAction() {
+  if (!lastMatchAction) return;
+
+  if (lastMatchAction.type === 'goal') {
+    const scorer = TOURNAMENT_PLAYERS.find((p) => p.id === lastMatchAction.scorerId);
+    if (scorer && scorer.goals > 0) {
+      scorer.goals -= 1;
+    }
+    if (LIVE_STANDINGS[lastMatchAction.winnerKey] && LIVE_STANDINGS[lastMatchAction.winnerKey].pg > 0) {
+      LIVE_STANDINGS[lastMatchAction.winnerKey].pg -= 1;
+      recalculateLiveStandingsTeam(lastMatchAction.winnerKey);
+    }
+    if (LIVE_STANDINGS[lastMatchAction.loserKey] && LIVE_STANDINGS[lastMatchAction.loserKey].pp > 0) {
+      LIVE_STANDINGS[lastMatchAction.loserKey].pp -= 1;
+      recalculateLiveStandingsTeam(lastMatchAction.loserKey);
+    }
+    showArenaStatusMsg(`Deshecho: se canceló el gol de ${lastMatchAction.scorerName} (${lastMatchAction.winnerName} vs ${lastMatchAction.loserName}).`, 'warning');
+  } else if (lastMatchAction.type === 'draw') {
+    if (LIVE_STANDINGS[lastMatchAction.teamAKey] && LIVE_STANDINGS[lastMatchAction.teamAKey].pe > 0) {
+      LIVE_STANDINGS[lastMatchAction.teamAKey].pe -= 1;
+      recalculateLiveStandingsTeam(lastMatchAction.teamAKey);
+    }
+    if (LIVE_STANDINGS[lastMatchAction.teamBKey] && LIVE_STANDINGS[lastMatchAction.teamBKey].pe > 0) {
+      LIVE_STANDINGS[lastMatchAction.teamBKey].pe -= 1;
+      recalculateLiveStandingsTeam(lastMatchAction.teamBKey);
+    }
+    showArenaStatusMsg(`Deshecho: se canceló el empate entre ${lastMatchAction.teamAName} y ${lastMatchAction.teamBName}.`, 'warning');
+  }
+
+  lastMatchAction = null;
+  savePlayersDatabase();
+  saveLiveStandings();
+
+  renderMatchArena();
+  renderMiniLiveStandings();
+  lastMatchAction = null;
+  renderMatchArena();
+  renderMiniLiveStandings();
+  renderLiveTeamsControl();
+  renderLivePlayersScoring();
+  renderStandingsTable();
+  renderAllSections();
+}
+
+function showArenaStatusMsg(text, type = 'success') {
+  const banner = document.getElementById('arena-status-banner');
+  if (!banner) return;
+  banner.className = `arena-status-msg status-${type}`;
+  banner.textContent = text;
+  banner.style.display = 'block';
+
+  clearTimeout(banner._timer);
+  banner._timer = setTimeout(() => {
+    if (banner) banner.style.display = 'none';
+  }, 4500);
+}
+
+function renderMatchArena() {
+  const container = document.getElementById('arena-duel-container');
+  const pillsA = document.getElementById('pills-team-a');
+  const pillsB = document.getElementById('pills-team-b');
+  const btnUndo = document.getElementById('btn-undo-last-match');
+  const btnDraw = document.getElementById('btn-register-arena-draw');
+
+  if (!container) return;
+
+  // Botón deshacer
+  if (btnUndo) {
+    btnUndo.style.display = lastMatchAction ? 'inline-flex' : 'none';
+  }
+
+  const teamKeys = ['azul', 'blanco', 'negro', 'rojo'];
+
+  // Renderizar pills selector equipo A
+  if (pillsA) {
+    pillsA.innerHTML = '';
+    teamKeys.forEach((key) => {
+      const def = MANCOS_TEAMS[key];
+      const isSelected = key === currentArenaTeamA;
+      const isOpponent = key === currentArenaTeamB;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `arena-team-pill pill-${key} ${isSelected ? 'active' : ''} ${isOpponent ? 'is-opponent' : ''}`;
+      btn.innerHTML = `<span class="team-bullet ${def.bulletClass}"></span><span>${def.name}</span>`;
+      btn.addEventListener('click', () => setArenaTeam('A', key));
+      pillsA.appendChild(btn);
+    });
+  }
+
+  // Renderizar pills selector equipo B
+  if (pillsB) {
+    pillsB.innerHTML = '';
+    teamKeys.forEach((key) => {
+      const def = MANCOS_TEAMS[key];
+      const isSelected = key === currentArenaTeamB;
+      const isOpponent = key === currentArenaTeamA;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `arena-team-pill pill-${key} ${isSelected ? 'active' : ''} ${isOpponent ? 'is-opponent' : ''}`;
+      btn.innerHTML = `<span class="team-bullet ${def.bulletClass}"></span><span>${def.name}</span>`;
+      btn.addEventListener('click', () => setArenaTeam('B', key));
+      pillsB.appendChild(btn);
+    });
+  }
+
+  const defA = MANCOS_TEAMS[currentArenaTeamA] || { name: currentArenaTeamA, bulletClass: 'bullet-white' };
+  const defB = MANCOS_TEAMS[currentArenaTeamB] || { name: currentArenaTeamB, bulletClass: 'bullet-white' };
+  const statA = LIVE_STANDINGS[currentArenaTeamA] || { pts: 0, pj: 0, pg: 0 };
+  const statB = LIVE_STANDINGS[currentArenaTeamB] || { pts: 0, pj: 0, pg: 0 };
+
+  // Actualizar texto del botón de empate
+  if (btnDraw) {
+    const smallText = btnDraw.querySelector('small');
+    if (smallText) {
+      smallText.textContent = `Registra 0-0 entre ${defA.name} y ${defB.name} (+1 punto c/u)`;
+    }
+  }
+
+  // Jugadores de cada equipo
+  const playersA = TOURNAMENT_PLAYERS.filter((p) => p.teamKey === currentArenaTeamA).sort((a, b) => a.potLevel - b.potLevel);
+  const playersB = TOURNAMENT_PLAYERS.filter((p) => p.teamKey === currentArenaTeamB).sort((a, b) => a.potLevel - b.potLevel);
+
+  function renderPlayerTriggerList(players, myTeamKey, rivalTeamKey) {
+    if (players.length === 0) {
+      return `
+        <div class="arena-empty-players">
+          Sin jugadores asignados aún. Publica los equipos en la pestaña "Armado".
+        </div>
+      `;
+    }
+    return players.map((p) => {
+      const potDef = POT_DEFINITIONS[p.potLevel] || { tag: `B${p.potLevel || 1}`, tagClass: 'pot-1-tag' };
+      const goalsToday = p.goals || 0;
+      return `
+        <button type="button" class="btn-player-goal-trigger trigger-team-${myTeamKey}" data-player-id="${p.id}" data-my-team="${myTeamKey}" data-rival-team="${rivalTeamKey}">
+          <div class="trigger-left">
+            <span class="pot-tag ${potDef.tagClass}">${potDef.tag}</span>
+            <strong class="trigger-player-name">${p.name}</strong>
+          </div>
+          <div class="trigger-right">
+            <span class="trigger-goals-badge ${goalsToday > 0 ? 'has-goals' : ''}">${goalsToday} ${goalsToday === 1 ? 'gol' : 'goles'}</span>
+            <span class="btn-touch-action">+ Gol Gana</span>
+          </div>
+        </button>
+      `;
+    }).join('');
+  }
+
+  container.innerHTML = `
+    <!-- Columna Equipo A -->
+    <div class="arena-team-column col-team-${currentArenaTeamA}">
+      <div class="arena-team-card-head">
+        <div class="arena-head-left">
+          <span class="team-bullet ${defA.bulletClass}"></span>
+          <h4 class="arena-team-title">${defA.name}</h4>
+        </div>
+        <div class="arena-head-pts">
+          <span class="pts-number">${statA.pts || 0}</span>
+          <span class="pts-txt">PTS (${statA.pj || 0} PJ)</span>
+        </div>
+      </div>
+      <div class="arena-players-stack">
+        <span class="arena-instruction">Toca al jugador que anotó el gol para ganar:</span>
+        ${renderPlayerTriggerList(playersA, currentArenaTeamA, currentArenaTeamB)}
+      </div>
+    </div>
+
+    <!-- Columna Equipo B -->
+    <div class="arena-team-column col-team-${currentArenaTeamB}">
+      <div class="arena-team-card-head">
+        <div class="arena-head-left">
+          <span class="team-bullet ${defB.bulletClass}"></span>
+          <h4 class="arena-team-title">${defB.name}</h4>
+        </div>
+        <div class="arena-head-pts">
+          <span class="pts-number">${statB.pts || 0}</span>
+          <span class="pts-txt">PTS (${statB.pj || 0} PJ)</span>
+        </div>
+      </div>
+      <div class="arena-players-stack">
+        <span class="arena-instruction">Toca al jugador que anotó el gol para ganar:</span>
+        ${renderPlayerTriggerList(playersB, currentArenaTeamB, currentArenaTeamA)}
+      </div>
+    </div>
+  `;
+
+  // Listeners para tocar al jugador que anotó el gol
+  container.querySelectorAll('.btn-player-goal-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const playerId = btn.getAttribute('data-player-id');
+      const myTeam = btn.getAttribute('data-my-team');
+      const rivalTeam = btn.getAttribute('data-rival-team');
+      registerArenaGoal(playerId, myTeam, rivalTeam);
+    });
+  });
+}
+
+function renderMiniLiveStandings() {
+  const tbody = document.getElementById('arena-mini-standings-tbody');
+  if (!tbody) return;
+
+  const teamKeys = ['azul', 'blanco', 'negro', 'rojo'];
+  teamKeys.forEach((k) => recalculateLiveStandingsTeam(k));
+
+  const teamsArr = teamKeys.map((k) => {
+    const item = LIVE_STANDINGS[k] || { ...DEFAULT_LIVE_STANDINGS[k] };
+    const gf = parseInt(item.gf, 10) || 0;
+    const gc = parseInt(item.gc, 10) || 0;
+    const dg = gf - gc;
+    return { ...item, gf, gc, dg };
+  }).sort((a, b) => {
+    if (b.pts !== a.pts) return b.pts - a.pts;
+    if (b.dg !== a.dg) return b.dg - a.dg;
+    if (b.gf !== a.gf) return b.gf - a.gf;
+    return a.name.localeCompare(b.name);
+  });
+
+  tbody.innerHTML = '';
+  teamsArr.forEach((team, idx) => {
+    const pos = idx + 1;
+    const teamDef = MANCOS_TEAMS[team.key] || { bulletClass: 'bullet-white', name: team.name };
+    let rankBadgeClass = pos === 1 ? 'rank-1' : pos === 2 ? 'rank-2-badge' : pos === 3 ? 'rank-3-badge' : 'rank-default';
+    let dgClass = team.dg > 0 ? 'positive' : team.dg < 0 ? 'negative' : 'neutral';
+    let dgFormatted = team.dg > 0 ? `+${team.dg}` : `${team.dg}`;
+
+    const tr = document.createElement('tr');
+    if (pos === 1) tr.className = 'row-leader';
+    tr.innerHTML = `
+      <td class="td-pos"><span class="pos-badge ${rankBadgeClass}">${pos}</span></td>
+      <td class="td-team">
+        <div class="team-cell">
+          <span class="team-bullet ${teamDef.bulletClass}"></span>
+          <strong class="team-title">${teamDef.name}</strong>
+        </div>
+      </td>
+      <td>${team.pj || 0}</td>
+      <td class="col-secondary">${team.pg || 0}</td>
+      <td class="col-secondary">${team.pe || 0}</td>
+      <td class="col-secondary">${team.pp || 0}</td>
+      <td class="col-secondary">${team.gf || 0}</td>
+      <td class="col-secondary">${team.gc || 0}</td>
+      <td class="td-dg ${dgClass}">${dgFormatted}</td>
+      <td class="td-pts"><span class="pts-pill">${team.pts || 0}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 // Renderizar la cuadrícula de control por equipo (Dinámica Gol Gana)
 function renderLiveTeamsControl() {
   const container = document.getElementById('live-teams-control-container');
@@ -1347,12 +1711,17 @@ function finishAndSaveMatchday() {
   const nextRound = currentRound + 1;
   saveCurrentRound(nextRound);
 
+  // Limpiar última acción de arena
+  lastMatchAction = null;
+
   // 7. Renderizar y actualizar todas las vistas
   renderStandingsTable();
   renderAllSections();
   renderMainRosters();
   renderDrawnTeamsPreview();
   renderPotsManagement();
+  renderMatchArena();
+  renderMiniLiveStandings();
   renderLiveTeamsControl();
   renderLivePlayersScoring();
   renderMatchdaysHistory();
@@ -1381,6 +1750,9 @@ function resetLiveSession() {
   });
   savePlayersDatabase();
 
+  lastMatchAction = null;
+  renderMatchArena();
+  renderMiniLiveStandings();
   renderLiveTeamsControl();
   renderLivePlayersScoring();
   renderStandingsTable();
@@ -1741,6 +2113,8 @@ function renderAllSections() {
 
   // Tabla de posiciones oficial de la jornada
   renderStandingsTable();
+  renderMiniLiveStandings();
+  renderMatchArena();
 
   // Actualizar indicador de ronda activa
   updateRoundUI(loadCurrentRound());
@@ -1803,6 +2177,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       renderPotsManagement();
       renderDrawnTeamsPreview();
+      renderMatchArena();
+      renderMiniLiveStandings();
       renderLiveTeamsControl();
       renderLivePlayersScoring();
       updateRoundUI(loadCurrentRound());
@@ -1939,6 +2315,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetPane) {
         targetPane.classList.add('active');
         if (paneId === 'admin-pane-live') {
+          renderMatchArena();
+          renderMiniLiveStandings();
           renderLiveTeamsControl();
           renderLivePlayersScoring();
           const liveRoundTitle = document.getElementById('admin-live-round-title');
@@ -1951,6 +2329,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 3.0 Controladores de Sesión en Vivo (Mesa de Control 2 Horas)
+  const btnSwapTeams = document.getElementById('btn-swap-teams');
+  if (btnSwapTeams) {
+    btnSwapTeams.addEventListener('click', swapArenaTeams);
+  }
+
+  const btnArenaDraw = document.getElementById('btn-register-arena-draw');
+  if (btnArenaDraw) {
+    btnArenaDraw.addEventListener('click', registerArenaDraw);
+  }
+
+  const btnArenaUndo = document.getElementById('btn-undo-last-match');
+  if (btnArenaUndo) {
+    btnArenaUndo.addEventListener('click', undoLastMatchAction);
+  }
+
   const btnFinishAndSaveRound = document.getElementById('btn-finish-and-save-round');
   if (btnFinishAndSaveRound) {
     btnFinishAndSaveRound.addEventListener('click', finishAndSaveMatchday);
@@ -1983,6 +2376,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderMainRosters();
       const roundNum = loadCurrentRound();
       updateRoundUI(roundNum);
+      renderMatchArena();
+      renderMiniLiveStandings();
       renderLiveTeamsControl();
       renderLivePlayersScoring();
       renderMatchdaysHistory();
@@ -2108,6 +2503,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       renderPotsManagement();
       renderDrawnTeamsPreview();
+      renderMatchArena();
+      renderMiniLiveStandings();
       renderLiveTeamsControl();
       renderLivePlayersScoring();
       updateRoundUI(loadCurrentRound());
