@@ -7,6 +7,8 @@
    ======================================================== */
 
 :root {
+  color-scheme: dark;
+
   /* Paleta Oficial */
   --mancos-navy-darkest: #050a12;
   --mancos-navy-bg: #09111e;
