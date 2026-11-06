@@ -1094,6 +1094,26 @@ function undoLastMatchAction() {
       recalculateLiveStandingsTeam(lastMatchAction.teamBKey);
     }
     showArenaStatusMsg(`Deshecho: se canceló el empate entre ${lastMatchAction.teamAName} y ${lastMatchAction.teamBName}.`, 'warning');
+  } else if (lastMatchAction.type === 'owngoal') {
+    const scorer = TOURNAMENT_PLAYERS.find((p) => p.id === lastMatchAction.scorerId);
+    if (scorer && scorer.ownGoals > 0) {
+      scorer.ownGoals -= 1;
+    }
+    if (LIVE_STANDINGS[lastMatchAction.winnerKey] && LIVE_STANDINGS[lastMatchAction.winnerKey].pg > 0) {
+      LIVE_STANDINGS[lastMatchAction.winnerKey].pg -= 1;
+      recalculateLiveStandingsTeam(lastMatchAction.winnerKey);
+    }
+    if (LIVE_STANDINGS[lastMatchAction.loserKey] && LIVE_STANDINGS[lastMatchAction.loserKey].pp > 0) {
+      LIVE_STANDINGS[lastMatchAction.loserKey].pp -= 1;
+      recalculateLiveStandingsTeam(lastMatchAction.loserKey);
+    }
+    showArenaStatusMsg(`Deshecho: se canceló el autogol de ${lastMatchAction.scorerName} (${lastMatchAction.winnerName} vs ${lastMatchAction.loserName}).`, 'warning');
+  } else if (lastMatchAction.type === 'owngoal_only') {
+    const scorer = TOURNAMENT_PLAYERS.find((p) => p.id === lastMatchAction.scorerId);
+    if (scorer && scorer.ownGoals > 0) {
+      scorer.ownGoals -= 1;
+    }
+    showArenaStatusMsg(`Deshecho: se canceló el autogol de ${lastMatchAction.scorerName}.`, 'warning');
   }
 
   lastMatchAction = null;
@@ -1102,11 +1122,6 @@ function undoLastMatchAction() {
 
   renderMatchArena();
   renderMiniLiveStandings();
-  lastMatchAction = null;
-  renderMatchArena();
-  renderMiniLiveStandings();
-  renderLiveTeamsControl();
-  renderLivePlayersScoring();
   renderStandingsTable();
   renderAllSections();
 }
@@ -1122,6 +1137,204 @@ function showArenaStatusMsg(text, type = 'success') {
   banner._timer = setTimeout(() => {
     if (banner) banner.style.display = 'none';
   }, 4500);
+}
+
+// ========================================================
+// 6.2.2 REGISTRO DE AUTOGOLES (MODAL EN VIVO)
+// ========================================================
+let currentOwnGoalFilter = 'arena'; // 'arena' | 'all'
+
+function openOwnGoalModal() {
+  const modal = document.getElementById('modal-owngoal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  currentOwnGoalFilter = 'arena';
+
+  const filterArenaBtn = document.getElementById('filter-owngoal-arena');
+  const filterAllBtn = document.getElementById('filter-owngoal-all');
+  if (filterArenaBtn) filterArenaBtn.classList.add('active');
+  if (filterAllBtn) filterAllBtn.classList.remove('active');
+
+  renderOwnGoalModalList();
+}
+
+function closeOwnGoalModal() {
+  const modal = document.getElementById('modal-owngoal');
+  if (!modal) return;
+  modal.style.display = 'none';
+  const modalAdmin = document.getElementById('modal-admin');
+  if (!modalAdmin || modalAdmin.style.display !== 'flex') {
+    document.body.style.overflow = '';
+  }
+}
+
+function renderOwnGoalModalList() {
+  const container = document.getElementById('owngoal-players-container');
+  if (!container) return;
+
+  let playersToShow = [];
+  if (currentOwnGoalFilter === 'arena') {
+    playersToShow = TOURNAMENT_PLAYERS.filter(
+      (p) => p.teamKey === currentArenaTeamA || p.teamKey === currentArenaTeamB
+    );
+  } else {
+    playersToShow = [...TOURNAMENT_PLAYERS];
+  }
+
+  if (playersToShow.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 24px 10px; color: var(--text-muted); font-size: 0.82rem; font-style: italic;">
+        ${currentOwnGoalFilter === 'arena'
+          ? 'No hay jugadores asignados a los dos equipos en cancha todavía. Revisa la pestaña "Armado" o cambia al filtro "Todos los Jugadores".'
+          : 'No hay jugadores registrados en los bombos.'}
+      </div>
+    `;
+    return;
+  }
+
+  playersToShow.sort((a, b) => {
+    if ((b.ownGoals || 0) !== (a.ownGoals || 0)) {
+      return (b.ownGoals || 0) - (a.ownGoals || 0);
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  const defA = MANCOS_TEAMS[currentArenaTeamA] || { name: currentArenaTeamA };
+  const defB = MANCOS_TEAMS[currentArenaTeamB] || { name: currentArenaTeamB };
+
+  container.innerHTML = playersToShow.map((player) => {
+    const teamDef = MANCOS_TEAMS[player.teamKey] || { bulletClass: 'bullet-white', name: 'Sin Equipo' };
+    const potDef = POT_DEFINITIONS[player.potLevel] || { tag: `B${player.potLevel || 1}`, tagClass: 'pot-1-tag' };
+    const ownGoalsCount = player.ownGoals || 0;
+
+    let impactText = '';
+    if (player.teamKey === currentArenaTeamA) {
+      impactText = `Victoria para ${defB.name}`;
+    } else if (player.teamKey === currentArenaTeamB) {
+      impactText = `Victoria para ${defA.name}`;
+    }
+
+    return `
+      <div class="owngoal-player-card">
+        <div class="owngoal-player-info">
+          <div class="owngoal-info-top">
+            <span class="team-bullet ${teamDef.bulletClass}"></span>
+            <strong class="owngoal-player-name">${player.name}</strong>
+            <span class="pot-tag ${potDef.tagClass}">${potDef.tag}</span>
+          </div>
+          <div class="owngoal-info-sub">
+            <span class="team-name-tag">${teamDef.name}</span>
+            ${impactText ? `<span class="impact-rival-badge">${impactText}</span>` : ''}
+          </div>
+        </div>
+
+        <div class="owngoal-player-actions">
+          <div class="owngoal-count-badge ${ownGoalsCount > 0 ? 'has-owngoals' : ''}">
+            ${ownGoalsCount} ${ownGoalsCount === 1 ? 'autogol' : 'autogoles'}
+          </div>
+
+          ${ownGoalsCount > 0 ? `
+            <button type="button" class="btn-owngoal-dec" data-player-id="${player.id}" title="Restar 1 autogol">
+              -
+            </button>
+          ` : ''}
+
+          <button type="button" class="btn-owngoal-trigger-add" data-player-id="${player.id}" title="Registrar autogol de ${player.name}">
+            <span>+ Autogol</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.btn-owngoal-trigger-add').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const pId = btn.getAttribute('data-player-id');
+      registerArenaOwnGoal(pId);
+    });
+  });
+
+  container.querySelectorAll('.btn-owngoal-dec').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const pId = btn.getAttribute('data-player-id');
+      decrementPlayerOwnGoal(pId);
+    });
+  });
+}
+
+function registerArenaOwnGoal(playerId) {
+  const scorer = TOURNAMENT_PLAYERS.find((p) => p.id === playerId);
+  if (!scorer) return;
+
+  scorer.ownGoals = (scorer.ownGoals || 0) + 1;
+
+  let winnerKey = null;
+  let loserKey = null;
+
+  if (scorer.teamKey === currentArenaTeamA) {
+    loserKey = currentArenaTeamA;
+    winnerKey = currentArenaTeamB;
+  } else if (scorer.teamKey === currentArenaTeamB) {
+    loserKey = currentArenaTeamB;
+    winnerKey = currentArenaTeamA;
+  }
+
+  if (winnerKey && loserKey) {
+    const winnerDef = MANCOS_TEAMS[winnerKey] || { name: winnerKey };
+    const loserDef = MANCOS_TEAMS[loserKey] || { name: loserKey };
+
+    if (LIVE_STANDINGS[winnerKey]) {
+      LIVE_STANDINGS[winnerKey].pg = (LIVE_STANDINGS[winnerKey].pg || 0) + 1;
+      recalculateLiveStandingsTeam(winnerKey);
+    }
+
+    if (LIVE_STANDINGS[loserKey]) {
+      LIVE_STANDINGS[loserKey].pp = (LIVE_STANDINGS[loserKey].pp || 0) + 1;
+      recalculateLiveStandingsTeam(loserKey);
+    }
+
+    lastMatchAction = {
+      type: 'owngoal',
+      scorerId: playerId,
+      winnerKey: winnerKey,
+      loserKey: loserKey,
+      scorerName: scorer.name,
+      winnerName: winnerDef.name,
+      loserName: loserDef.name
+    };
+
+    showArenaStatusMsg(`¡Autogol de ${scorer.name}! ${winnerDef.name} gana 1-0 a ${loserDef.name}.`, 'warning');
+  } else {
+    lastMatchAction = {
+      type: 'owngoal_only',
+      scorerId: playerId,
+      scorerName: scorer.name
+    };
+    showArenaStatusMsg(`Autogol registrado para ${scorer.name}.`, 'warning');
+  }
+
+  savePlayersDatabase();
+  saveLiveStandings();
+
+  renderMatchArena();
+  renderMiniLiveStandings();
+  renderStandingsTable();
+  renderAllSections();
+
+  closeOwnGoalModal();
+}
+
+function decrementPlayerOwnGoal(playerId) {
+  const player = TOURNAMENT_PLAYERS.find((p) => p.id === playerId);
+  if (!player || !player.ownGoals || player.ownGoals <= 0) return;
+
+  player.ownGoals -= 1;
+  savePlayersDatabase();
+
+  renderAllSections();
+  renderOwnGoalModalList();
+  showArenaStatusMsg(`Se restó 1 autogol a ${player.name}.`, 'info');
 }
 
 function renderMatchArena() {
@@ -2286,6 +2499,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cerrar modales con Escape
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+      const modalOwnGoal = document.getElementById('modal-owngoal');
+      if (modalOwnGoal && modalOwnGoal.style.display === 'flex') {
+        closeOwnGoalModal();
+        return;
+      }
       if (modalEditSlot && modalEditSlot.style.display === 'flex') {
         closeEditSlotModal();
         return;
@@ -2342,6 +2560,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnArenaUndo = document.getElementById('btn-undo-last-match');
   if (btnArenaUndo) {
     btnArenaUndo.addEventListener('click', undoLastMatchAction);
+  }
+
+  // Modal de Autogoles
+  const btnOpenOwnGoalModal = document.getElementById('btn-open-owngoal-modal');
+  if (btnOpenOwnGoalModal) {
+    btnOpenOwnGoalModal.addEventListener('click', openOwnGoalModal);
+  }
+
+  const btnCloseOwnGoalModal = document.getElementById('btn-close-owngoal-modal');
+  if (btnCloseOwnGoalModal) {
+    btnCloseOwnGoalModal.addEventListener('click', closeOwnGoalModal);
+  }
+
+  const modalOwnGoal = document.getElementById('modal-owngoal');
+  if (modalOwnGoal) {
+    modalOwnGoal.addEventListener('click', (e) => {
+      if (e.target === modalOwnGoal) {
+        closeOwnGoalModal();
+      }
+    });
+  }
+
+  const filterOwnGoalArena = document.getElementById('filter-owngoal-arena');
+  const filterOwnGoalAll = document.getElementById('filter-owngoal-all');
+  if (filterOwnGoalArena && filterOwnGoalAll) {
+    filterOwnGoalArena.addEventListener('click', () => {
+      filterOwnGoalArena.classList.add('active');
+      filterOwnGoalAll.classList.remove('active');
+      currentOwnGoalFilter = 'arena';
+      renderOwnGoalModalList();
+    });
+
+    filterOwnGoalAll.addEventListener('click', () => {
+      filterOwnGoalAll.classList.add('active');
+      filterOwnGoalArena.classList.remove('active');
+      currentOwnGoalFilter = 'all';
+      renderOwnGoalModalList();
+    });
   }
 
   const btnFinishAndSaveRound = document.getElementById('btn-finish-and-save-round');

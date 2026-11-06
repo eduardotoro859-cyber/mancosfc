@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -810,8 +811,8 @@
                 <!-- Se puebla dinámicamente: Columna Equipo A vs Columna Equipo B -->
               </div>
 
-              <!-- Botón Central de Empate 0-0 -->
-              <div class="arena-draw-action-wrap">
+              <!-- Acciones de Partido: Empate 0-0 y Registrar Autogol -->
+              <div class="arena-actions-grid">
                 <button type="button" class="btn-arena-draw-big" id="btn-register-arena-draw"
                   title="Finalizar partido sin goles: +1 punto a cada equipo (0 - 0)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -821,7 +822,20 @@
                   </svg>
                   <span class="draw-btn-text">
                     <strong>Finalizar en Empate (0 - 0)</strong>
-                    <small>Suma +1 punto y +1 partido a ambos equipos en cancha</small>
+                    <small>Suma +1 punto a ambos equipos en cancha</small>
+                  </span>
+                </button>
+
+                <button type="button" class="btn-arena-owngoal-trigger" id="btn-open-owngoal-modal"
+                  title="Registrar autogol de un jugador (otorga victoria 1-0 al equipo rival)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                  <span class="owngoal-btn-text">
+                    <strong>Registrar Autogol</strong>
+                    <small>Suma autogol y da victoria 1-0 al rival</small>
                   </span>
                 </button>
               </div>
@@ -870,59 +884,6 @@
                 </table>
               </div>
             </div>
-
-            <!-- SECCIÓN 3: AJUSTES MANUALES Y AUTOGOLES (COLAPSABLE) -->
-            <details class="live-advanced-details">
-              <summary class="live-advanced-summary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="3" />
-                  <path
-                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                </svg>
-                <span>Ajustes manuales y registro de autogoles (Opciones avanzadas)</span>
-                <span class="summary-arrow">▾</span>
-              </summary>
-              <div class="advanced-details-body">
-                <div class="live-teams-control-grid" id="live-teams-control-container">
-                  <!-- Se renderiza dinámicamente desde app.js -->
-                </div>
-
-                <div class="live-section-card mt-14">
-                  <div class="live-section-head">
-                    <div class="live-head-title-wrap">
-                      <span class="live-head-icon-svg live-icon-ball" title="Goles y Autogoles">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="m4.93 4.93 4.24 4.24" />
-                          <path d="m14.83 9.17 4.24-4.24" />
-                          <path d="m14.83 14.83 4.24 4.24" />
-                          <path d="m9.17 14.83-4.24 4.24" />
-                          <circle cx="12" cy="12" r="4" />
-                        </svg>
-                      </span>
-                      <div>
-                        <h4 class="live-section-title">Todos los Jugadores (Goles y Autogoles)</h4>
-                        <span class="live-section-subtitle">Corrección fina individual o registro de autogoles</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Selector de filtro de equipo -->
-                  <div class="live-team-filters" id="live-player-filters">
-                    <button type="button" class="btn-team-filter active" data-team="all">Todos</button>
-                    <button type="button" class="btn-team-filter" data-team="azul">Azul</button>
-                    <button type="button" class="btn-team-filter" data-team="blanco">Blanco</button>
-                    <button type="button" class="btn-team-filter" data-team="negro">Negro</button>
-                    <button type="button" class="btn-team-filter" data-team="rojo">Rojo</button>
-                  </div>
-
-                  <!-- Lista de Jugadores -->
-                  <div class="live-players-scoring-list" id="live-players-scoring-container">
-                    <!-- Se renderiza dinámicamente desde app.js -->
-                  </div>
-                </div>
-              </div>
-            </details>
 
           </div>
 
@@ -986,6 +947,40 @@
           <button type="button" class="btn-secondary-action" id="btn-cancel-edit-slot">Cancelar</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal para Registrar Autogol -->
+  <div class="modal-backdrop" id="modal-owngoal" style="display: none; z-index: 1000;">
+    <div class="modal-container owngoal-modal-box">
+      <div class="modal-decor-line modal-decor-owngoal"></div>
+
+      <div class="modal-header">
+        <div class="edit-badge-icon badge-icon-owngoal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+        <h3 class="modal-heading">Registrar Autogol</h3>
+        <p class="modal-sub">Toca al jugador que cometió el autogol. Se registrará en su historial y el equipo rival ganará 1-0 en cancha.</p>
+      </div>
+
+      <!-- Filtro rápido: En Cancha vs Todos -->
+      <div class="owngoal-filter-tabs">
+        <button type="button" class="btn-owngoal-filter active" id="filter-owngoal-arena">En Cancha (Duelo Actual)</button>
+        <button type="button" class="btn-owngoal-filter" id="filter-owngoal-all">Todos los Jugadores</button>
+      </div>
+
+      <!-- Lista de Jugadores para Autogol -->
+      <div class="owngoal-players-list" id="owngoal-players-container">
+        <!-- Renderizado dinámicamente desde app.js -->
+      </div>
+
+      <div class="modal-actions-row">
+        <button type="button" class="btn-secondary-action" id="btn-close-owngoal-modal" style="width: 100%;">Cerrar</button>
+      </div>
     </div>
   </div>
 
