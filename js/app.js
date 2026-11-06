@@ -1173,89 +1173,119 @@ function renderOwnGoalModalList() {
   const container = document.getElementById('owngoal-players-container');
   if (!container) return;
 
-  let playersToShow = [];
-  if (currentOwnGoalFilter === 'arena') {
-    playersToShow = TOURNAMENT_PLAYERS.filter(
-      (p) => p.teamKey === currentArenaTeamA || p.teamKey === currentArenaTeamB
-    );
-  } else {
-    playersToShow = [...TOURNAMENT_PLAYERS];
-  }
-
-  if (playersToShow.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; padding: 24px 10px; color: var(--text-muted); font-size: 0.82rem; font-style: italic;">
-        ${currentOwnGoalFilter === 'arena'
-          ? 'No hay jugadores asignados a los dos equipos en cancha todavía. Revisa la pestaña "Armado" o cambia al filtro "Todos los Jugadores".'
-          : 'No hay jugadores registrados en los bombos.'}
-      </div>
-    `;
-    return;
-  }
-
-  playersToShow.sort((a, b) => {
-    if ((b.ownGoals || 0) !== (a.ownGoals || 0)) {
-      return (b.ownGoals || 0) - (a.ownGoals || 0);
-    }
-    return a.name.localeCompare(b.name);
-  });
-
-  const defA = MANCOS_TEAMS[currentArenaTeamA] || { name: currentArenaTeamA };
-  const defB = MANCOS_TEAMS[currentArenaTeamB] || { name: currentArenaTeamB };
-
-  container.innerHTML = playersToShow.map((player) => {
-    const teamDef = MANCOS_TEAMS[player.teamKey] || { bulletClass: 'bullet-white', name: 'Sin Equipo' };
+  function renderPlayerRowHtml(player) {
     const potDef = POT_DEFINITIONS[player.potLevel] || { tag: `B${player.potLevel || 1}`, tagClass: 'pot-1-tag' };
     const ownGoalsCount = player.ownGoals || 0;
 
-    let impactText = '';
-    if (player.teamKey === currentArenaTeamA) {
-      impactText = `Victoria para ${defB.name}`;
-    } else if (player.teamKey === currentArenaTeamB) {
-      impactText = `Victoria para ${defA.name}`;
-    }
-
     return `
-      <div class="owngoal-player-card">
-        <div class="owngoal-player-info">
-          <div class="owngoal-info-top">
-            <span class="team-bullet ${teamDef.bulletClass}"></span>
-            <strong class="owngoal-player-name">${player.name}</strong>
-            <span class="pot-tag ${potDef.tagClass}">${potDef.tag}</span>
-          </div>
-          <div class="owngoal-info-sub">
-            <span class="team-name-tag">${teamDef.name}</span>
-            ${impactText ? `<span class="impact-rival-badge">${impactText}</span>` : ''}
-          </div>
+      <div class="owngoal-player-row">
+        <div class="owngoal-player-main">
+          <span class="pot-tag ${potDef.tagClass}">${potDef.tag}</span>
+          <span class="owngoal-player-fullname">${player.name}</span>
+          ${ownGoalsCount > 0 ? `<span class="owngoal-pill-count">${ownGoalsCount} ${ownGoalsCount === 1 ? 'autogol' : 'autogoles'}</span>` : ''}
         </div>
-
-        <div class="owngoal-player-actions">
-          <div class="owngoal-count-badge ${ownGoalsCount > 0 ? 'has-owngoals' : ''}">
-            ${ownGoalsCount} ${ownGoalsCount === 1 ? 'autogol' : 'autogoles'}
-          </div>
-
+        <div class="owngoal-player-btn-group">
           ${ownGoalsCount > 0 ? `
-            <button type="button" class="btn-owngoal-dec" data-player-id="${player.id}" title="Restar 1 autogol">
-              -
-            </button>
+            <button type="button" class="btn-owngoal-minus" data-player-id="${player.id}" title="Restar 1 autogol por error">-</button>
           ` : ''}
-
-          <button type="button" class="btn-owngoal-trigger-add" data-player-id="${player.id}" title="Registrar autogol de ${player.name}">
-            <span>+ Autogol</span>
+          <button type="button" class="btn-owngoal-add" data-player-id="${player.id}" title="Registrar autogol de ${player.name}">
+            + Autogol
           </button>
         </div>
       </div>
     `;
-  }).join('');
+  }
 
-  container.querySelectorAll('.btn-owngoal-trigger-add').forEach((btn) => {
+  const defA = MANCOS_TEAMS[currentArenaTeamA] || { name: currentArenaTeamA, bulletClass: 'bullet-white' };
+  const defB = MANCOS_TEAMS[currentArenaTeamB] || { name: currentArenaTeamB, bulletClass: 'bullet-white' };
+
+  if (currentOwnGoalFilter === 'arena') {
+    const playersA = TOURNAMENT_PLAYERS.filter((p) => p.teamKey === currentArenaTeamA).sort((a, b) => a.potLevel - b.potLevel);
+    const playersB = TOURNAMENT_PLAYERS.filter((p) => p.teamKey === currentArenaTeamB).sort((a, b) => a.potLevel - b.potLevel);
+
+    if (playersA.length === 0 && playersB.length === 0) {
+      container.innerHTML = `
+        <div class="owngoal-empty-state">
+          No hay jugadores asignados a los equipos en cancha todavía.<br>
+          <small>Publica los equipos en la pestaña "Armado" o cambia al filtro "Todos los Jugadores".</small>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="owngoal-team-group">
+        <div class="owngoal-group-header header-team-${currentArenaTeamA}">
+          <div class="group-header-left">
+            <span class="team-bullet ${defA.bulletClass}"></span>
+            <strong>${defA.name}</strong>
+          </div>
+          <span class="group-impact-hint">Si comete autogol: <strong>Gana ${defB.name} 1-0</strong></span>
+        </div>
+        <div class="owngoal-group-players">
+          ${playersA.length ? playersA.map(renderPlayerRowHtml).join('') : '<p class="group-empty-hint">Sin jugadores asignados</p>'}
+        </div>
+      </div>
+
+      <div class="owngoal-team-group">
+        <div class="owngoal-group-header header-team-${currentArenaTeamB}">
+          <div class="group-header-left">
+            <span class="team-bullet ${defB.bulletClass}"></span>
+            <strong>${defB.name}</strong>
+          </div>
+          <span class="group-impact-hint">Si comete autogol: <strong>Gana ${defA.name} 1-0</strong></span>
+        </div>
+        <div class="owngoal-group-players">
+          ${playersB.length ? playersB.map(renderPlayerRowHtml).join('') : '<p class="group-empty-hint">Sin jugadores asignados</p>'}
+        </div>
+      </div>
+    `;
+  } else {
+    // Todos los jugadores
+    let allPlayers = [...TOURNAMENT_PLAYERS];
+    allPlayers.sort((a, b) => {
+      if ((b.ownGoals || 0) !== (a.ownGoals || 0)) {
+        return (b.ownGoals || 0) - (a.ownGoals || 0);
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    container.innerHTML = `
+      <div class="owngoal-group-players">
+        ${allPlayers.map((p) => {
+          const tDef = MANCOS_TEAMS[p.teamKey] || { bulletClass: 'bullet-white', name: 'Sin equipo' };
+          const potDef = POT_DEFINITIONS[p.potLevel] || { tag: `B${p.potLevel || 1}`, tagClass: 'pot-1-tag' };
+          const ownGoalsCount = p.ownGoals || 0;
+          return `
+            <div class="owngoal-player-row">
+              <div class="owngoal-player-main">
+                <span class="team-bullet ${tDef.bulletClass}"></span>
+                <span class="pot-tag ${potDef.tagClass}">${potDef.tag}</span>
+                <span class="owngoal-player-fullname">${p.name}</span>
+                <small class="owngoal-player-teamname">(${tDef.name})</small>
+                ${ownGoalsCount > 0 ? `<span class="owngoal-pill-count">${ownGoalsCount} ${ownGoalsCount === 1 ? 'autogol' : 'autogoles'}</span>` : ''}
+              </div>
+              <div class="owngoal-player-btn-group">
+                ${ownGoalsCount > 0 ? `
+                  <button type="button" class="btn-owngoal-minus" data-player-id="${p.id}" title="Restar 1 autogol">-</button>
+                ` : ''}
+                <button type="button" class="btn-owngoal-add" data-player-id="${p.id}" title="Registrar autogol de ${p.name}">+ Autogol</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  container.querySelectorAll('.btn-owngoal-add').forEach((btn) => {
     btn.addEventListener('click', () => {
       const pId = btn.getAttribute('data-player-id');
       registerArenaOwnGoal(pId);
     });
   });
 
-  container.querySelectorAll('.btn-owngoal-dec').forEach((btn) => {
+  container.querySelectorAll('.btn-owngoal-minus').forEach((btn) => {
     btn.addEventListener('click', () => {
       const pId = btn.getAttribute('data-player-id');
       decrementPlayerOwnGoal(pId);
