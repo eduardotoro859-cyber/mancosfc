@@ -1,0 +1,33 @@
+{
+  "name": "Mancos F.C. - Torneo Oficial",
+  "short_name": "Mancos F.C.",
+  "description": "Aplicación oficial del Torneo Mancos F.C. con sorteo equilibrado, mesa de control en vivo y estadísticas.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#060b14",
+  "theme_color": "#060b14",
+  "categories": ["sports", "utilities"],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
+

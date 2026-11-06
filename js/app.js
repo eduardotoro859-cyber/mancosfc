@@ -2820,4 +2820,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // 5. Inicializaciones
   sessionStorage.removeItem('mancos_admin_logged');
   renderAllSections();
+
+  // 6. Registro de Service Worker para PWA (Instalable como App con Icono)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch((err) => {
+        console.warn('ServiceWorker no se pudo registrar:', err);
+      });
+    });
+  }
 });
