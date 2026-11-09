@@ -633,6 +633,75 @@ function clearAllPlayers() {
 // ========================================================
 // 6. SORTEO EQUILIBRADO DE EQUIPOS (5 JUGADORES POR EQUIPO)
 // ========================================================
+
+// Generador seguro de enteros aleatorios [0, max - 1] (Criptográfico)
+function getSecureRandomInt(max) {
+  if (window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] % max;
+  }
+  return Math.floor(Math.random() * max);
+}
+
+// Fisher-Yates (Knuth) Shuffle de máxima entropía
+function secureShuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = getSecureRandomInt(i + 1);
+    const temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+  }
+  return arr;
+}
+
+// Genera una combinación válida de 4 equipos con 1 jugador por cada uno de los 5 bombos
+function createSingleBalancedDraw() {
+  const teamKeys = ['azul', 'blanco', 'negro', 'rojo'];
+  const candidate = {
+    azul: [],
+    blanco: [],
+    negro: [],
+    rojo: []
+  };
+
+  for (let potNum = 1; potNum <= 5; potNum++) {
+    const playersInPot = TOURNAMENT_PLAYERS.filter((p) => p.potLevel === potNum);
+    // Doble barajado: barajamos los 4 jugadores del bombo
+    const shuffledPlayers = secureShuffleArray(playersInPot);
+    // Y barajamos el orden de asignación de equipos
+    const shuffledTeams = secureShuffleArray(teamKeys);
+
+    shuffledTeams.forEach((teamKey, idx) => {
+      if (shuffledPlayers[idx]) {
+        candidate[teamKey].push(shuffledPlayers[idx]);
+      }
+    });
+  }
+
+  return candidate;
+}
+
+// Cuenta cuántos jugadores quedarían en el MISMO equipo comparado con un sorteo previo
+function countSameTeamRepeats(candidateTeams, previousTeams) {
+  if (!previousTeams) return 0;
+  const teamKeys = ['azul', 'blanco', 'negro', 'rojo'];
+  let repeats = 0;
+
+  teamKeys.forEach((key) => {
+    const prevPlayers = (previousTeams[key] || []).map((p) => p.id);
+    const candidatePlayers = (candidateTeams[key] || []).map((p) => p.id);
+    candidatePlayers.forEach((pId) => {
+      if (prevPlayers.includes(pId)) {
+        repeats++;
+      }
+    });
+  });
+
+  return repeats;
+}
+
 function generateBalancedDraw(isRepeat = false) {
   // Verificar que cada uno de los 5 bombos tenga EXACTAMENTE 4 jugadores
   for (let i = 1; i <= 5; i++) {
@@ -643,34 +712,62 @@ function generateBalancedDraw(isRepeat = false) {
     }
   }
 
-  const teamKeys = ['azul', 'blanco', 'negro', 'rojo'];
-  currentDrawnTeams = {
-    azul: [],
-    blanco: [],
-    negro: [],
-    rojo: []
-  };
+  // Guardar copia del sorteo anterior si existe para forzar máxima novedad
+  const hasPrevious = currentDrawnTeams && 
+    (currentDrawnTeams.azul.length > 0 || currentDrawnTeams.blanco.length > 0);
+  const previousTeams = hasPrevious ? JSON.parse(JSON.stringify(currentDrawnTeams)) : null;
 
-  // Por cada bombo (1 al 5), mezclar aleatoriamente y repartir 1 a cada equipo
-  for (let potNum = 1; potNum <= 5; potNum++) {
-    const playersInPot = TOURNAMENT_PLAYERS.filter((p) => p.potLevel === potNum);
-    const shuffled = [...playersInPot].sort(() => Math.random() - 0.5);
+  let bestCandidate = null;
+  let minRepeats = 999;
 
-    teamKeys.forEach((teamKey, idx) => {
-      if (shuffled[idx]) {
-        currentDrawnTeams[teamKey].push(shuffled[idx]);
-      }
-    });
+  // Al repetir sorteo, iteramos entre combinaciones posibles para buscar la que tenga
+  // la mayor variación posible (mínimo de jugadores que repitan equipo respecto al anterior)
+  const maxIterations = (isRepeat && previousTeams) ? 80 : 1;
+
+  for (let attempt = 0; attempt < maxIterations; attempt++) {
+    const candidate = createSingleBalancedDraw();
+    if (!previousTeams) {
+      bestCandidate = candidate;
+      minRepeats = 0;
+      break;
+    }
+
+    const repeats = countSameTeamRepeats(candidate, previousTeams);
+    if (repeats < minRepeats) {
+      minRepeats = repeats;
+      bestCandidate = candidate;
+    }
+
+    // Si encontramos una combinación donde prácticamente nadie repite equipo (<= 1), es perfecta
+    if (repeats <= 1) {
+      break;
+    }
   }
 
+  if (!bestCandidate) {
+    bestCandidate = createSingleBalancedDraw();
+  }
+
+  currentDrawnTeams = bestCandidate;
   saveDrawnTeams();
+
+  // Feedback visual de barajado
+  const container = document.getElementById('drawn-teams-container');
+  if (container) {
+    container.classList.add('shuffling-teams');
+    setTimeout(() => {
+      container.classList.remove('shuffling-teams');
+    }, 380);
+  }
+
   renderDrawnTeamsPreview();
 
   const roundNum = loadCurrentRound();
   if (isRepeat) {
-    alert(`¡Sorteo repetido con éxito! Se ha generado una nueva combinación equilibrada para la Jornada ${roundNum}.`);
+    const changedCount = 20 - minRepeats;
+    alert(`¡Sorteo repetido con éxito para la Jornada ${roundNum}!\n\nSe generó una combinación completamente nueva: ${changedCount} de 20 jugadores cambiaron de equipo.`);
   } else {
-    alert(`¡Sorteo equilibrado generado con éxito para la Jornada ${roundNum}! Cada equipo ha recibido 1 jugador de cada bombo. Pulsa "Publicar Equipos en la Jornada" para confirmarlos.`);
+    alert(`¡Sorteo equilibrado generado con éxito para la Jornada ${roundNum}!\n\nCada equipo ha recibido exactamente 1 jugador de cada bombo (1 al 5).\nPulsa "Publicar Equipos en la Jornada" para confirmarlos.`);
   }
 }
 

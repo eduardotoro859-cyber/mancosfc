@@ -2442,6 +2442,26 @@ body {
   grid-template-columns: 1fr;
   gap: 12px;
   width: 100%;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.drawn-teams-grid.shuffling-teams {
+  animation: shuffleTeamsPulse 0.35s ease-in-out;
+}
+
+@keyframes shuffleTeamsPulse {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.985);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .drawn-team-card {
