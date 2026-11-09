@@ -2424,6 +2424,32 @@ body {
   transform: translateY(-1px);
 }
 
+.draw-actions-bar .btn-whatsapp-copy {
+  grid-column: 1 / -1;
+  width: 100%;
+  background: linear-gradient(135deg, rgba(37, 211, 102, 0.16) 0%, rgba(18, 140, 126, 0.25) 100%);
+  color: #86efac;
+  border: 1px solid rgba(37, 211, 102, 0.45);
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.15);
+  font-weight: 700;
+}
+
+.draw-actions-bar .btn-whatsapp-copy:hover {
+  background: linear-gradient(135deg, rgba(37, 211, 102, 0.28) 0%, rgba(18, 140, 126, 0.4) 100%);
+  border-color: #25d366;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+  transform: translateY(-1px);
+}
+
+.draw-actions-bar .btn-whatsapp-copy.copied {
+  background: #25d366 !important;
+  border-color: #25d366 !important;
+  color: #051f0e !important;
+  box-shadow: 0 0 14px rgba(37, 211, 102, 0.5) !important;
+  font-weight: 800;
+}
+
 .draw-actions-bar button:active {
   transform: translateY(0);
   filter: brightness(0.94);
@@ -3288,14 +3314,15 @@ body {
   }
 
   .draw-actions-bar {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     max-width: 860px;
     gap: 10px;
   }
 
   .draw-actions-bar .btn-draw-trigger,
   .draw-actions-bar .btn-repeat-draw,
-  .draw-actions-bar .btn-success-action {
+  .draw-actions-bar .btn-success-action,
+  .draw-actions-bar .btn-whatsapp-copy {
     grid-column: auto;
     width: 100%;
   }

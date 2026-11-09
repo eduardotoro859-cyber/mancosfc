@@ -880,6 +880,111 @@ function applyTeamsToMatchday() {
   alert(`¡Equipos publicados con éxito en la Jornada ${roundNum}! Los 4 planteles ya tienen sus 5 jugadores equilibrados.`);
 }
 
+// Copiar los equipos sorteados con formato estilizado para WhatsApp
+function copyDrawnTeamsToWhatsApp() {
+  const teamKeys = ['azul', 'blanco', 'negro', 'rojo'];
+  const hasTeams = teamKeys.some((k) => currentDrawnTeams[k] && currentDrawnTeams[k].length > 0);
+
+  if (!hasTeams) {
+    alert('Aún no has generado el sorteo. Primero pulsa "Generar Sorteo" para armar los equipos.');
+    return;
+  }
+
+  const roundNum = loadCurrentRound();
+
+  // Fecha del partido: se disputa al día siguiente del sorteo (+1 día)
+  const matchDate = new Date();
+  matchDate.setDate(matchDate.getDate() + 1);
+
+  const dateOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+  let dateFormatted = matchDate.toLocaleDateString('es-ES', dateOptions);
+  dateFormatted = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+
+  const teamEmojis = {
+    azul: '🔵',
+    blanco: '⚪',
+    negro: '⚫',
+    rojo: '🔴'
+  };
+
+  let message = `⚽ *MANCOS F.C.* ⚽\n`;
+  message += `📅 *Fecha:* ${dateFormatted}\n`;
+  message += `🏆 *Jornada:* ${roundNum}\n\n`;
+
+  teamKeys.forEach((key) => {
+    const def = MANCOS_TEAMS[key] || { name: key };
+    const emoji = teamEmojis[key] || '⚽';
+    const players = (currentDrawnTeams[key] || []).sort((a, b) => (a.potLevel || 1) - (b.potLevel || 1));
+
+    message += `${emoji} *EQUIPO ${def.name.toUpperCase()}*\n`;
+    if (players.length === 0) {
+      message += `• _Sin jugadores asignados_\n`;
+    } else {
+      players.forEach((p) => {
+        message += `• ${p.name} (B${p.potLevel || 1})\n`;
+      });
+    }
+    message += `\n`;
+  });
+
+  message = message.trimEnd();
+
+  const btn = document.getElementById('btn-copy-teams-whatsapp');
+
+  function showSuccessState() {
+    if (btn) {
+      const originalHtml = btn.innerHTML;
+      btn.classList.add('copied');
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>¡Equipos Copiados!</span>
+      `;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = originalHtml;
+      }, 2500);
+    }
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(message)
+      .then(() => {
+        showSuccessState();
+      })
+      .catch(() => {
+        fallbackCopyText(message);
+        showSuccessState();
+      });
+  } else {
+    fallbackCopyText(message);
+    showSuccessState();
+  }
+}
+
+function fallbackCopyText(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.top = '-9999px';
+  textArea.style.left = '-9999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+  } catch (err) {
+    console.error('Fallback copy failed', err);
+  }
+  document.body.removeChild(textArea);
+}
+
 // Renderizar planteles principales de la jornada
 function renderMainRosters() {
   const teamKeys = ['azul', 'blanco', 'negro', 'rojo'];
@@ -2827,6 +2932,11 @@ document.addEventListener('DOMContentLoaded', () => {
     btnApplyTeams.addEventListener('click', () => {
       applyTeamsToMatchday();
     });
+  }
+
+  const btnCopyTeamsWhatsApp = document.getElementById('btn-copy-teams-whatsapp');
+  if (btnCopyTeamsWhatsApp) {
+    btnCopyTeamsWhatsApp.addEventListener('click', copyDrawnTeamsToWhatsApp);
   }
 
   // 4.1 Formulario de Edición de Casilla / Sustitución Manual
